@@ -24,7 +24,7 @@ SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-^8bm+_8ku@^q(3
 
 DEBUG = os.environ.get('DJANGO_DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = os.environ.get('DJANGO_ALLOWED_HOSTS', '0.0.0.0').split(',')
+ALLOWED_HOSTS = os.environ.get('DJANGO_ALLOWED_HOSTS', '34.205.125.137').split(',')
 
 # Configuración de CORS
 CORS_ALLOW_CREDENTIALS = True
@@ -38,6 +38,11 @@ CORS_ALLOW_HEADERS = [
 ]
 
 CSRF_TRUSTED_ORIGINS = os.environ.get('CSRF_TRUSTED_ORIGINS', 'http://localhost:3000').split(',')
+
+
+print("ALLOWED_HOSTS:", ALLOWED_HOSTS)
+print("CORS_ALLOWED_ORIGINS:", CORS_ALLOWED_ORIGINS)
+print("CSRF_TRUSTED_ORIGINS:", CSRF_TRUSTED_ORIGINS)
 
 # Configuración de cookies
 CSRF_COOKIE_HTTPONLY = True  

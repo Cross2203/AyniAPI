@@ -1,0 +1,15 @@
+{
+    # Desactiva HTTPS automático ya que no tenemos un dominio
+    auto_https off
+}
+
+:80 {
+    reverse_proxy localhost:8000
+}
+
+:443 {
+    tls internal {
+        on_demand
+    }
+    reverse_proxy localhost:8000
+}
