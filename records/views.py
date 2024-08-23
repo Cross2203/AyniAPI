@@ -7,7 +7,7 @@ from .serializers import UserRegisterSerializer, UserLoginSerializer, UserSerial
 from rest_framework import permissions, status
 from django.middleware.csrf import get_token
 from rest_framework.decorators import api_view
-from django.views.decorators.csrf import csrf_protect
+from django.views.decorators.csrf import csrf_protect, ensure_csrf_cookie
 from django.utils.decorators import method_decorator
 from django.http import JsonResponse
 from rest_framework.parsers import MultiPartParser, FormParser
@@ -29,24 +29,30 @@ class UserRegister(APIView):
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class UserLogin(APIView):
-  permission_classes = [permissions.AllowAny]
-  authentication_classes = [SessionAuthentication]
-  def post(self, request):
-    serializer = UserLoginSerializer(data=request.data)
-    if serializer.is_valid(raise_exception=True):
-      user = serializer.check_user(request.data)
-      if user:
-        login(request, user)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-  
+    permission_classes = [permissions.AllowAny]
+
+    @method_decorator(ensure_csrf_cookie)
+    def post(self, request):
+        serializer = UserLoginSerializer(data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            user = serializer.check_user(request.data)
+            if user:
+                login(request, user)
+                return Response(UserSerializer(user).data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @method_decorator(csrf_protect, name='dispatch')
 class UserLogout(APIView):
     def post(self, request):
-        print('CSRF Token in request:', request.META.get('CSRF_COOKIE', 'Not found'))
         logout(request)
-        return Response(status=status.HTTP_200_OK)
+        return Response({"detail": "Successfully logged out."}, status=status.HTTP_200_OK)
+
+@method_decorator(ensure_csrf_cookie, name='dispatch')
+class GetCSRFToken(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def get(self, request):
+        return Response({"detail": "CSRF cookie set"})
 
 
 class UserView(APIView):

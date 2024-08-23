@@ -28,6 +28,7 @@ urlpatterns = [
     path('register', views.UserRegister.as_view(), name='register'), 
     path('login', views.UserLogin.as_view(), name='login'),
     path('logout', views.UserLogout.as_view(), name='logout'),
+    path('get_csrf_token', views.GetCSRFToken.as_view(), name='token'),
     path('user', views.UserView.as_view(), name='user'),
     path('historial/pdf/<int:id_historial>/', generar_pdf_historial, name='generar_pdf_historial'),
     path('upload/<str:folder_name>/', views.upload_file, name='upload-file'),
