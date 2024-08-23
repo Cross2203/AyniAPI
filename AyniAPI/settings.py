@@ -47,10 +47,10 @@ print("CSRF_TRUSTED_ORIGINS:", CSRF_TRUSTED_ORIGINS)
 # Configuración de cookies
  
 CSRF_COOKIE_SECURE = True
-SESSION_COOKIE_SECURE = False  # Permite cookies sobre HTTP
+SESSION_COOKIE_SECURE = True 
 CSRF_COOKIE_NAME = 'csrftoken'
 CSRF_COOKIE_HTTPONLY = False
-CSRF_COOKIE_SAMESITE = 'Lax'  # Más permisivo sin requerir HTTPS
+CSRF_COOKIE_SAMESITE = 'None'  
 # Application definition
 
 
