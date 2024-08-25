@@ -7,8 +7,8 @@ from .serializers import UserRegisterSerializer, UserLoginSerializer, UserSerial
 from rest_framework import permissions, status
 from django.middleware.csrf import get_token
 from rest_framework.decorators import api_view
-from django.views.decorators.csrf import csrf_protect, ensure_csrf_cookie
-from django.utils.decorators import method_decorator
+from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework_simplejwt.tokens import RefreshToken
 from django.http import JsonResponse
 from rest_framework.parsers import MultiPartParser, FormParser
 from .get_file import get_s3_file_url
@@ -19,48 +19,58 @@ from .storage import CustomS3Boto3Storage
 import uuid
   
 class UserRegister(APIView):
-  permission_classes = [permissions.AllowAny]
-  def post(self, request):
-    serializer = UserRegisterSerializer(data=request.data)
-    if serializer.is_valid(raise_exception=True):
-      user = serializer.create(request.data)
-      if user:
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-class UserLogin(APIView):
     permission_classes = [permissions.AllowAny]
-
-    @method_decorator(ensure_csrf_cookie)
+    
     def post(self, request):
-        serializer = UserLoginSerializer(data=request.data)
+        serializer = UserRegisterSerializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
-            user = serializer.check_user(request.data)
+            user = serializer.create(request.data)
             if user:
-                login(request, user)
-                return Response(UserSerializer(user).data, status=status.HTTP_200_OK)
+                refresh = RefreshToken.for_user(user)
+                return Response({
+                    'refresh': str(refresh),
+                    'access': str(refresh.access_token),
+                    'user': UserSerializer(user).data
+                }, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-@method_decorator(csrf_protect, name='dispatch')
+class UserLogin(TokenObtainPairView):
+    def post(self, request, *args, **kwargs):
+        response = super().post(request, *args, **kwargs)
+        if response.status_code == 200:
+            token = response.data.get('access')
+
+            from rest_framework_simplejwt.tokens import AccessToken
+            decoded_token = AccessToken(token)
+            
+            user_id = decoded_token['user_id']
+            
+            from django.contrib.auth import get_user_model
+            User = get_user_model()
+            user = User.objects.get(id=user_id)
+            
+            response.data['user'] = UserSerializer(user).data
+        
+        return response
+
 class UserLogout(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
     def post(self, request):
-        logout(request)
-        return Response({"detail": "Successfully logged out."}, status=status.HTTP_200_OK)
-
-@method_decorator(ensure_csrf_cookie, name='dispatch')
-class GetCSRFToken(APIView):
-    permission_classes = [permissions.AllowAny]
-
-    def get(self, request):
-        return Response({"detail": "CSRF cookie set"})
-
+        try:
+            refresh_token = request.data["refresh"]
+            token = RefreshToken(refresh_token)
+            token.blacklist()
+            return Response({"detail": "Successfully logged out."}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 class UserView(APIView):
-  permission_classes = [permissions.IsAuthenticated]
-  authentication_classes = [SessionAuthentication]
-  def get(self, request):
-    serializer = UserSerializer(request.user)
-    return Response({'user': serializer.data}, status=status.HTTP_200_OK)
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        serializer = UserSerializer(request.user)
+        return Response({'user': serializer.data}, status=status.HTTP_200_OK)
   
 class GetFileView(APIView):
     def get(self, request, folder_name, file_name, *args, **kwargs):

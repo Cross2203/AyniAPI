@@ -28,9 +28,9 @@ class UserLoginSerializer(serializers.Serializer):
         return user
   
 class UserSerializer(serializers.ModelSerializer):
-  class Meta:
-    model = UserModer
-    fields = ('email', 'username')
+    class Meta:
+        model = UserModer
+        fields = ('id', 'email', 'username')
 
 class CitaSerializer(serializers.ModelSerializer):
   class Meta:

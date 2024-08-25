@@ -2,6 +2,7 @@ from rest_framework import routers
 from .api import CitaViewSet, DiagnosticoViewSet, PacienteViewSet, TratamientoViewSet, HistorialMedicoViewSet, RecetaViewSet, HistorialMedicoPacienteViewSet, AntecedentesMedicosViewSet, AntecedenteMedicoPacienteViewSet, CitasPacienteViewSet, ConsultaViewSet, SignosVitalesViewSet, ExamenFisicoViewSet, RevisionOrganosSistemasViewSet, ExamenFisicoPacienteViewSet, RevisionOrganosSistemasPacienteViewSet
 from .reports import generar_pdf_historial
 from django.urls import path, include
+from rest_framework_simplejwt.views import TokenRefreshView
 from . import views
 
 
@@ -25,10 +26,10 @@ router.register('api/pacientes/examenfisico', ExamenFisicoPacienteViewSet, basen
 router.register('api/pacientes/revisionorganossistemas', RevisionOrganosSistemasPacienteViewSet, basename='revisionorganos-paciente')
 
 urlpatterns = [
-    path('register', views.UserRegister.as_view(), name='register'), 
+    path('register', views.UserRegister.as_view(), name='register'),
     path('login', views.UserLogin.as_view(), name='login'),
     path('logout', views.UserLogout.as_view(), name='logout'),
-    path('get_csrf_token', views.GetCSRFToken.as_view(), name='token'),
+    path('token/refresh', TokenRefreshView.as_view(), name='token_refresh'),
     path('user', views.UserView.as_view(), name='user'),
     path('historial/pdf/<int:id_historial>/', generar_pdf_historial, name='generar_pdf_historial'),
     path('upload/<str:folder_name>/', views.upload_file, name='upload-file'),
