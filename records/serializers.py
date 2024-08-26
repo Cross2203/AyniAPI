@@ -126,11 +126,11 @@ class AntecedentesMedicosSerializer(serializers.ModelSerializer):
     
 class HistorialMedicoSerializer(serializers.ModelSerializer):
     paciente = serializers.PrimaryKeyRelatedField(queryset=Paciente.objects.all())
-    consulta = serializers.PrimaryKeyRelatedField(queryset=Consulta.objects.all())
-    signos_vitales = serializers.PrimaryKeyRelatedField(queryset=SignosVitales.objects.all())
-    diagnostico = serializers.PrimaryKeyRelatedField(queryset=Diagnostico.objects.all())
-    tratamiento = serializers.PrimaryKeyRelatedField(queryset=Tratamiento.objects.all())
-    receta = serializers.PrimaryKeyRelatedField(queryset=Receta.objects.all())
+    consulta = serializers.PrimaryKeyRelatedField(queryset=Consulta.objects.all(), allow_null=True, required=False)
+    signos_vitales = serializers.PrimaryKeyRelatedField(queryset=SignosVitales.objects.all(), allow_null=True, required=False)
+    diagnostico = serializers.PrimaryKeyRelatedField(queryset=Diagnostico.objects.all(), allow_null=True, required=False)
+    tratamiento = serializers.PrimaryKeyRelatedField(queryset=Tratamiento.objects.all(), allow_null=True, required=False)
+    receta = serializers.PrimaryKeyRelatedField(queryset=Receta.objects.all(), allow_null=True, required=False)
 
     class Meta:
         model = HistorialMedico
