@@ -2,9 +2,8 @@ import boto3
 from botocore.exceptions import ClientError
 from django.conf import settings
 from uuid import uuid4
-import os
 
-# Configuración del cliente S3
+
 s3 = boto3.client(
     's3',
     aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
@@ -20,8 +19,7 @@ def upload_file_to_s3(file, folder_name):
         s3.upload_fileobj(
             file,
             settings.AWS_STORAGE_BUCKET_NAME,
-            object_key,
-            ExtraArgs={'ACL': settings.AWS_DEFAULT_ACL}
+            object_key
         )
 
         file_url = f"https://{settings.AWS_S3_CUSTOM_DOMAIN}/{object_key}"
@@ -31,7 +29,7 @@ def upload_file_to_s3(file, folder_name):
         error_code = e.response['Error']['Code']
         error_message = e.response['Error']['Message']
         print(f"Error al subir el archivo a S3: {error_code} - {error_message}")
-        raise
+        raise e
     except Exception as e:
         print(f"Error inesperado al subir el archivo a S3: {e}")
-        raise
+        raise e
